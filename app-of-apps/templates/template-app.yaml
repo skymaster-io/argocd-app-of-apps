@@ -1,0 +1,35 @@
+{{- range $key, $val := .Values.services }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $.Values.namespace }}-{{ $key }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "{{ index $val "sync-wave" | default "-1" }}"
+spec:
+  destination:
+    namespace: {{ $.Values.namespace }}
+    server: 'https://kubernetes.default.svc'
+  sources:
+  - repoURL: 'git@...../argocd-app-values.git'
+    targetRevision: HEAD
+    ref: values
+  - repoURL: 'https://chartmuseum.repo.com'
+    targetRevision: {{ $val.chartVersion }}
+    chart: {{ $key }}
+    helm:
+      valueFiles:
+        - $values/environments/{{ $.Values.namespace }}/{{ $key }}.yaml
+      parameters:
+        - name: image.tag
+          value: {{ $val.appVersion }}
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+{{- end }}

@@ -1,0 +1,11 @@
+namespace: dev
+services:
+  service-a:
+    appVersion: 0.0.0
+    chartVersion: 0.1.0
+    # sync-wave: 1
+  service-b:
+    appVersion: 0.0.1
+    chartVersion: 0.0.2
+    sync-wave: "0"
+ 
